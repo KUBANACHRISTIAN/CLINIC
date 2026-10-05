@@ -84,4 +84,17 @@ public class AppointmentController {
         LocalDate day = LocalDate.parse(date);
         return new ResponseEntity<>(appointmentService.cancelDoctorAppointmentsOnDate(doctorId, day), HttpStatus.OK);
     }
+
+    @GetMapping(value = "/page", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Page<Appointment>> getAppointmentsPage(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "appointmentDate,asc") String sort) {
+        String[] sortParams = sort.split(",");
+        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
+        return new ResponseEntity<>(appointmentService.getAppointmentsPage(pageable), HttpStatus.OK);
+    }
 }

@@ -75,4 +75,8 @@ public class AppointmentService {
         int count = appointmentRepo.cancelDoctorAppointmentsOnDate(doctorId, date);
         return count + " appointments cancelled";
     }
+
+    public Page<Appointment> getAppointmentsPage(Pageable pageable) {
+        return appointmentRepo.findAll(pageable);
+    }
 }
