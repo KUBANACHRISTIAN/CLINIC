@@ -33,7 +33,7 @@ public class Specialization {
 
     @ManyToMany
     @JoinTable (
-       name = "doctor_specialization",
+       name = "doctor_specializations",
        joinColumns = @JoinColumn (name="specialization_id"),
        inverseJoinColumns = @JoinColumn (name="doctor_id")
     )
