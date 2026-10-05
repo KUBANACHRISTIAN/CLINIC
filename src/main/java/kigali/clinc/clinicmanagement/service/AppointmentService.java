@@ -57,4 +57,8 @@ public class AppointmentService {
     public List<Appointment> getAppointmentsByStatus(AppointmentStatus status) {
         return appointmentRepo.findByStatusOrderByAppointmentDateAsc(status);
     }
+
+    public List<Appointment> getAppointmentsBetween(LocalDate start, LocalDate end) {
+        return appointmentRepo.findByAppointmentDateBetweenOrderByAppointmentDateAsc(start, end);
+    }
 }

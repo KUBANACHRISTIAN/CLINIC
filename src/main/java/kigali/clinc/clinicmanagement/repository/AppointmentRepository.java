@@ -18,4 +18,6 @@ import kigali.clinc.clinicmanagement.domain.Doctor;
 public interface AppointmentRepository extends JpaRepository<Appointment, UUID> {
 
     List<Appointment> findByStatusOrderByAppointmentDateAsc(AppointmentStatus status);
+
+    List<Appointment> findByAppointmentDateBetweenOrderByAppointmentDateAsc(LocalDate start, LocalDate end);
 }
