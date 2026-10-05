@@ -20,6 +20,9 @@ public class PatientController {
     @Autowired
     private PatientService patientService;
 
+    @Autowired
+    private DoctorService doctorService;
+
     @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> savePatient(@RequestBody Patient patient) {
         String message = patientService.savePatient(patient);
@@ -64,5 +67,13 @@ public class PatientController {
     @GetMapping(value = "/by-last-name", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<Patient>> getPatientsByLastName(@RequestParam String lastName) {
         return new ResponseEntity<>(patientService.getPatientsByLastName(lastName), HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/of-doctor/{doctorId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getPatientsOfDoctor(@PathVariable UUID doctorId) {
+        if (!doctorService.doctorExists(doctorId)) {
+            return new ResponseEntity<>("The doctor with that id does not exist", HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<>(patientService.getPatientsOfDoctor(doctorId), HttpStatus.OK);
     }
 }

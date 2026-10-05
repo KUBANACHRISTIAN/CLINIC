@@ -57,4 +57,8 @@ public class PatientService {
     public List<Patient> getPatientsByLastName(String lastName) {
         return patientRepo.findByLastNameIgnoreCaseOrderByFirstNameAsc(lastName);
     }
+
+    public List<Patient> getPatientsOfDoctor(UUID doctorId) {
+        return patientRepo.findPatientsByDoctorId(doctorId);
+    }
 }

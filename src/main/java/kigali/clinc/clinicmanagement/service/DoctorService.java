@@ -62,4 +62,8 @@ public class DoctorService {
     public List<Doctor> getDoctorsWithoutOffice() {
         return doctorRepo.findDoctorsWithoutOffice();
     }
+
+    public boolean doctorExists(UUID id) {
+        return doctorRepo.existsById(id);
+    }
 }
