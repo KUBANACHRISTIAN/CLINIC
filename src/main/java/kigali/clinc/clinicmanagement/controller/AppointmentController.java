@@ -73,4 +73,9 @@ public class AppointmentController {
         LocalDate endDate = LocalDate.parse(end);
         return new ResponseEntity<>(appointmentService.getAppointmentsBetween(startDate, endDate), HttpStatus.OK);
     }
+
+    @GetMapping(value = "/stats/by-status", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Object[]>> getAppointmentStatsByStatus() {
+        return new ResponseEntity<>(appointmentService.getAppointmentStatsByStatus(), HttpStatus.OK);
+    }
 }

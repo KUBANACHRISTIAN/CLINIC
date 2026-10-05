@@ -65,4 +65,8 @@ public class AppointmentService {
     public List<Appointment> getAppointmentsBetween(LocalDate start, LocalDate end) {
         return appointmentRepo.findByAppointmentDateBetweenOrderByAppointmentDateAsc(start, end);
     }
+
+    public List<Object[]> getAppointmentStatsByStatus() {
+        return appointmentRepo.countAppointmentsByStatus();
+    }
 }
