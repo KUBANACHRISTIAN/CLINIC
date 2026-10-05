@@ -28,6 +28,9 @@ public class AppointmentController {
     @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> saveAppointment(@RequestBody Appointment appointment) {
         String message = appointmentService.saveAppointment(appointment);
+        if (message.equals("Doctor is already booked on that date")) {
+            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
+        }
         return new ResponseEntity<>(message, HttpStatus.CREATED);
     }
 

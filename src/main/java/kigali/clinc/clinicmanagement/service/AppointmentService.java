@@ -22,6 +22,10 @@ public class AppointmentService {
     private AppointmentRepository appointmentRepo;
 
     public String saveAppointment(Appointment appointment) {
+        if (appointmentRepo.existsByDoctorAndAppointmentDateAndStatusNot(
+                appointment.getDoctor(), appointment.getAppointmentDate(), AppointmentStatus.CANCELLED)) {
+            return "Doctor is already booked on that date";
+        }
         appointmentRepo.save(appointment);
         return "Appointment saved successfully";
     }
