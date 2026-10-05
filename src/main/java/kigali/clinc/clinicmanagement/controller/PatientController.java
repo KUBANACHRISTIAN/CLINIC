@@ -60,4 +60,9 @@ public class PatientController {
                 ? new ResponseEntity<>(message, HttpStatus.OK)
                 : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }
+
+    @GetMapping(value = "/by-last-name", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Patient>> getPatientsByLastName(@RequestParam String lastName) {
+        return new ResponseEntity<>(patientService.getPatientsByLastName(lastName), HttpStatus.OK);
+    }
 }

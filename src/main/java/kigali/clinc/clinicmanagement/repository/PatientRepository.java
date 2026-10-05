@@ -14,4 +14,6 @@ import kigali.clinc.clinicmanagement.domain.Patient;
 public interface PatientRepository extends JpaRepository<Patient, UUID> {
     boolean existsByFirstNameAndLastName(String firstName, String lastName);
     List<Patient> findByFirstNameContainingIgnoreCase(String firstName);
+
+    List<Patient> findByLastNameIgnoreCaseOrderByFirstNameAsc(String lastName);
 }

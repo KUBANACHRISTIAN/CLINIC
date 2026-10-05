@@ -53,4 +53,8 @@ public class PatientService {
         patientRepo.deleteById(id);
         return "Patient deleted successfully";
     }
+
+    public List<Patient> getPatientsByLastName(String lastName) {
+        return patientRepo.findByLastNameIgnoreCaseOrderByFirstNameAsc(lastName);
+    }
 }
