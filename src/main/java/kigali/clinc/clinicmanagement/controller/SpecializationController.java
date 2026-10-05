@@ -52,4 +52,9 @@ public class SpecializationController {
                 ? new ResponseEntity<>(message, HttpStatus.OK)
                 : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }
+
+    @GetMapping(value = "/unused", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Specialization>> getUnusedSpecializations() {
+        return new ResponseEntity<>(specializationService.getUnusedSpecializations(), HttpStatus.OK);
+    }
 }

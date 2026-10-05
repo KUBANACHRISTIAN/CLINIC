@@ -54,6 +54,10 @@ public class SpecializationService {
         return "Specialization deleted successfully";
     }
 
+    public List<Specialization> getUnusedSpecializations() {
+        return specializationRepo.findUnusedSpecializations();
+    }
+
     private void resolveDoctors(Specialization specialization) {
         List<Doctor> doctors = specialization.getDoctors();
         if (doctors == null || doctors.isEmpty()) {
