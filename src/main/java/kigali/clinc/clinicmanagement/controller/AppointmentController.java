@@ -97,4 +97,10 @@ public class AppointmentController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
         return new ResponseEntity<>(appointmentService.getAppointmentsPage(pageable), HttpStatus.OK);
     }
+
+    @DeleteMapping(value = "/cancelled-before", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> deleteCancelledBefore(@RequestParam String date) {
+        LocalDate day = LocalDate.parse(date);
+        return new ResponseEntity<>(appointmentService.deleteCancelledBefore(day), HttpStatus.OK);
+    }
 }

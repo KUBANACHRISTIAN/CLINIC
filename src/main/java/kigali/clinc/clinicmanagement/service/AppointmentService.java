@@ -79,4 +79,10 @@ public class AppointmentService {
     public Page<Appointment> getAppointmentsPage(Pageable pageable) {
         return appointmentRepo.findAll(pageable);
     }
+
+    @Transactional
+    public String deleteCancelledBefore(LocalDate date) {
+        int count = appointmentRepo.deleteCancelledBefore(date);
+        return count + " appointments deleted";
+    }
 }
