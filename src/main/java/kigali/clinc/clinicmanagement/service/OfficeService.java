@@ -53,4 +53,8 @@ public class OfficeService {
         officeRepo.deleteById(id);
         return "Office deleted successfully";
     }
+
+    public List<Object[]> getBusiestOffice() {
+        return officeRepo.findBusiestOffice(PageRequest.of(0, 1));
+    }
 }

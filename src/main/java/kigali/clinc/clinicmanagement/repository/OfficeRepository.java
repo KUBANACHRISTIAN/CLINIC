@@ -24,4 +24,8 @@ public interface OfficeRepository extends  JpaRepository<Office,UUID >{
 
     Boolean existsByOfficeNumber(int officeNumber);
     List<Office> findByNameContainingIgnoreCase(String name);
+
+    @Query("SELECT o.name, o.officeNumber, COUNT(a) FROM Appointment a JOIN a.doctor d JOIN d.office o "
+            + "GROUP BY o.name, o.officeNumber ORDER BY COUNT(a) DESC")
+    List<Object[]> findBusiestOffice(Pageable pageable);
 }
