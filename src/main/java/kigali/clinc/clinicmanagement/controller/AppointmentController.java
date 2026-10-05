@@ -78,4 +78,10 @@ public class AppointmentController {
     public ResponseEntity<List<Object[]>> getAppointmentStatsByStatus() {
         return new ResponseEntity<>(appointmentService.getAppointmentStatsByStatus(), HttpStatus.OK);
     }
+
+    @PatchMapping(value = "/cancel-day", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> cancelDoctorAppointmentsOnDate(@RequestParam UUID doctorId, @RequestParam String date) {
+        LocalDate day = LocalDate.parse(date);
+        return new ResponseEntity<>(appointmentService.cancelDoctorAppointmentsOnDate(doctorId, day), HttpStatus.OK);
+    }
 }

@@ -69,4 +69,10 @@ public class AppointmentService {
     public List<Object[]> getAppointmentStatsByStatus() {
         return appointmentRepo.countAppointmentsByStatus();
     }
+
+    @Transactional
+    public String cancelDoctorAppointmentsOnDate(UUID doctorId, LocalDate date) {
+        int count = appointmentRepo.cancelDoctorAppointmentsOnDate(doctorId, date);
+        return count + " appointments cancelled";
+    }
 }

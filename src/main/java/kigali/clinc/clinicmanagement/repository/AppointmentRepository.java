@@ -25,4 +25,11 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
 
     @Query("SELECT a.status, COUNT(a) FROM Appointment a GROUP BY a.status")
     List<Object[]> countAppointmentsByStatus();
+
+    @Modifying
+    @Query("UPDATE Appointment a SET a.status = kigali.clinc.clinicmanagement.domain.AppointmentStatus.CANCELLED "
+            + "WHERE a.doctor.id = :doctorId AND a.appointmentDate = :date "
+            + "AND a.status <> kigali.clinc.clinicmanagement.domain.AppointmentStatus.COMPLETED "
+            + "AND a.status <> kigali.clinc.clinicmanagement.domain.AppointmentStatus.CANCELLED")
+    int cancelDoctorAppointmentsOnDate(@Param("doctorId") UUID doctorId, @Param("date") LocalDate date);
 }
