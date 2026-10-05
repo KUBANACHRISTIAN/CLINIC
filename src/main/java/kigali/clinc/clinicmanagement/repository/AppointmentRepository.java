@@ -16,4 +16,6 @@ import kigali.clinc.clinicmanagement.domain.Doctor;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, UUID> {
+
+    List<Appointment> findByStatusOrderByAppointmentDateAsc(AppointmentStatus status);
 }

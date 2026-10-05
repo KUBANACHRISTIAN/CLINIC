@@ -53,4 +53,8 @@ public class AppointmentService {
         appointmentRepo.deleteById(id);
         return "Appointment deleted successfully";
     }
+
+    public List<Appointment> getAppointmentsByStatus(AppointmentStatus status) {
+        return appointmentRepo.findByStatusOrderByAppointmentDateAsc(status);
+    }
 }

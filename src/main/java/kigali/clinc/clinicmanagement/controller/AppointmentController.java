@@ -58,4 +58,9 @@ public class AppointmentController {
                 ? new ResponseEntity<>(message, HttpStatus.OK)
                 : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }
+
+    @GetMapping(value = "/by-status", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Appointment>> getAppointmentsByStatus(@RequestParam AppointmentStatus status) {
+        return new ResponseEntity<>(appointmentService.getAppointmentsByStatus(status), HttpStatus.OK);
+    }
 }
