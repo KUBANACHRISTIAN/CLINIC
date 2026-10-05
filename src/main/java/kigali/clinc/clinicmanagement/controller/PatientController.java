@@ -76,4 +76,9 @@ public class PatientController {
         }
         return new ResponseEntity<>(patientService.getPatientsOfDoctor(doctorId), HttpStatus.OK);
     }
+
+    @GetMapping(value = "/frequent", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Patient>> getFrequentPatients(@RequestParam int min) {
+        return new ResponseEntity<>(patientService.getFrequentPatients(min), HttpStatus.OK);
+    }
 }

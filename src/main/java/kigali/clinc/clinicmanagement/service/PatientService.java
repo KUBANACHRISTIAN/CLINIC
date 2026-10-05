@@ -61,4 +61,8 @@ public class PatientService {
     public List<Patient> getPatientsOfDoctor(UUID doctorId) {
         return patientRepo.findPatientsByDoctorId(doctorId);
     }
+
+    public List<Patient> getFrequentPatients(int min) {
+        return patientRepo.findFrequentPatients(min);
+    }
 }
