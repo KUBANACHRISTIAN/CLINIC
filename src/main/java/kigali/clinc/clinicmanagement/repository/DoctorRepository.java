@@ -14,4 +14,7 @@ import kigali.clinc.clinicmanagement.domain.Doctor;
 public interface DoctorRepository extends JpaRepository<Doctor, UUID> {
     boolean existsByFirstNameAndLastName(String firstName, String lastName);
     List<Doctor> findByFirstNameContainingIgnoreCase(String firstName);
+
+    @Query("SELECT d FROM Doctor d JOIN d.specializations s WHERE LOWER(s.name) = LOWER(:name)")
+    List<Doctor> findBySpecializationName(@Param("name") String name);
 }

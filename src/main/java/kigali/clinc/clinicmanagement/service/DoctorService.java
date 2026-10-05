@@ -54,4 +54,8 @@ public class DoctorService {
         doctorRepo.deleteById(id);
         return "Doctor deleted successfully";
     }
+
+    public List<Doctor> getDoctorsBySpecialization(String name) {
+        return doctorRepo.findBySpecializationName(name);
+    }
 }

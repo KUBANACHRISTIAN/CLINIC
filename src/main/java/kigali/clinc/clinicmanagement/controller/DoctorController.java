@@ -59,4 +59,9 @@ public class DoctorController {
                 ? new ResponseEntity<>(message, HttpStatus.OK)
                 : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
     }
+
+    @GetMapping(value = "/by-specialization", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Doctor>> getDoctorsBySpecialization(@RequestParam String name) {
+        return new ResponseEntity<>(doctorService.getDoctorsBySpecialization(name), HttpStatus.OK);
+    }
 }
