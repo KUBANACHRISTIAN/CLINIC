@@ -6,83 +6,94 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import kigali.clinc.clinicmanagement.domain.Appointment;
 import kigali.clinc.clinicmanagement.domain.AppointmentStatus;
 import kigali.clinc.clinicmanagement.repository.AppointmentRepository;
+import kigali.clinc.clinicmanagement.repository.PrescriptionRepository;
 
 @Service
 public class AppointmentService {
 
-    @Autowired
-    private AppointmentRepository appointmentRepo;
+    @Autowired private AppointmentRepository appointmentRepo;
+    @Autowired private PrescriptionRepository prescriptionRepo;
 
+    // B1 - safe booking: past date blocked, status always SCHEDULED
     public String saveAppointment(Appointment appointment) {
-        if (appointmentRepo.existsByDoctorAndAppointmentDateAndStatusNot(
-                appointment.getDoctor(), appointment.getAppointmentDate(), AppointmentStatus.CANCELLED)) {
-            return "Doctor is already booked on that date";
-        }
+        if (appointment.getAppointmentDate().isBefore(LocalDate.now()))
+            return "Appointment date cannot be in the past";
+        appointment.setStatus(AppointmentStatus.SCHEDULED);
         appointmentRepo.save(appointment);
         return "Appointment saved successfully";
     }
 
-    public List<Appointment> getAllAppointments() {
-        return appointmentRepo.findAll();
-    }
+    public List<Appointment> getAllAppointments() { return appointmentRepo.findAll(); }
 
-    public Optional<Appointment> getAppointmentById(UUID id) {
-        return appointmentRepo.findById(id);
-    }
+    public Optional<Appointment> getAppointmentById(UUID id) { return appointmentRepo.findById(id); }
 
+    // General update — does NOT change status (status only via B2)
     public String updateAppointment(UUID id, Appointment updated) {
-        return appointmentRepo.findById(id).map(appointment -> {
-            appointment.setAppointmentDate(updated.getAppointmentDate());
-            appointment.setReason(updated.getReason());
-            appointment.setStatus(updated.getStatus());
-            appointment.setDoctor(updated.getDoctor());
-            appointment.setPatient(updated.getPatient());
-            appointmentRepo.save(appointment);
+        if (updated.getAppointmentDate() != null && updated.getAppointmentDate().isBefore(LocalDate.now()))
+            return "Appointment date cannot be in the past";
+        return appointmentRepo.findById(id).map(a -> {
+            a.setAppointmentDate(updated.getAppointmentDate());
+            a.setReason(updated.getReason());
+            a.setDoctor(updated.getDoctor());
+            a.setPatient(updated.getPatient());
+            appointmentRepo.save(a);
             return "Appointment updated successfully";
-        }).orElse("Appointment not found");
+        }).orElse("The appointment with that id does not exist");
     }
 
+    // C4 - delete blocked if prescriptions exist
     public String deleteAppointment(UUID id) {
-        if (!appointmentRepo.existsById(id)) {
-            return "Appointment not found";
-        }
+        if (!appointmentRepo.existsById(id)) return "The appointment with that id does not exist";
+        if (prescriptionRepo.existsByAppointmentId(id))
+            return "That appointment has prescriptions, delete them first";
         appointmentRepo.deleteById(id);
         return "Appointment deleted successfully";
     }
 
-    public List<Appointment> getAppointmentsByStatus(AppointmentStatus status) {
-        return appointmentRepo.findByStatusOrderByAppointmentDateAsc(status);
+    // B2 - status flow enforcement
+    public String updateStatus(UUID id, AppointmentStatus newStatus) {
+        return appointmentRepo.findById(id).map(a -> {
+            AppointmentStatus current = a.getStatus();
+            boolean allowed = (current == AppointmentStatus.SCHEDULED &&
+                                (newStatus == AppointmentStatus.CONFIRMED || newStatus == AppointmentStatus.CANCELLED))
+                           || (current == AppointmentStatus.CONFIRMED &&
+                                (newStatus == AppointmentStatus.COMPLETED || newStatus == AppointmentStatus.CANCELLED));
+            if (!allowed)
+                return "Cannot change status from " + current + " to " + newStatus;
+            a.setStatus(newStatus);
+            appointmentRepo.save(a);
+            return "Appointment status updated successfully";
+        }).orElse("The appointment with that id does not exist");
     }
 
-    public List<Appointment> getAppointmentsBetween(LocalDate start, LocalDate end) {
-        return appointmentRepo.findByAppointmentDateBetweenOrderByAppointmentDateAsc(start, end);
+    // B3 - reschedule with all business rules
+    public String reschedule(UUID id, LocalDate newDate) {
+        return appointmentRepo.findById(id).map(a -> {
+            if (a.getStatus() == AppointmentStatus.COMPLETED)
+                return "A COMPLETED appointment cannot be rescheduled";
+            if (a.getStatus() == AppointmentStatus.CANCELLED)
+                return "A CANCELLED appointment cannot be rescheduled";
+            if (newDate.isBefore(LocalDate.now()))
+                return "Appointment date cannot be in the past";
+            if (appointmentRepo.existsByDoctorAndAppointmentDateAndStatusNotAndIdNot(
+                    a.getDoctor(), newDate, AppointmentStatus.CANCELLED, id))
+                return "Doctor is already booked on that date";
+            a.setAppointmentDate(newDate);
+            a.setStatus(AppointmentStatus.SCHEDULED);
+            appointmentRepo.save(a);
+            return "Appointment rescheduled successfully";
+        }).orElse("The appointment with that id does not exist");
     }
 
-    public List<Object[]> getAppointmentStatsByStatus() {
-        return appointmentRepo.countAppointmentsByStatus();
-    }
-
-    @Transactional
-    public String cancelDoctorAppointmentsOnDate(UUID doctorId, LocalDate date) {
-        int count = appointmentRepo.cancelDoctorAppointmentsOnDate(doctorId, date);
-        return count + " appointments cancelled";
-    }
-
-    public Page<Appointment> getAppointmentsPage(Pageable pageable) {
-        return appointmentRepo.findAll(pageable);
-    }
-
-    @Transactional
-    public String deleteCancelledBefore(LocalDate date) {
-        int count = appointmentRepo.deleteCancelledBefore(date);
-        return count + " appointments deleted";
+    // D2 - upcoming appointments of a patient
+    public List<Appointment> getUpcoming(String ssNumber) {
+        return appointmentRepo
+            .findByPatientSsNumberAndAppointmentDateGreaterThanEqualAndStatusInOrderByAppointmentDateAsc(
+                ssNumber, LocalDate.now(), List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED));
     }
 }

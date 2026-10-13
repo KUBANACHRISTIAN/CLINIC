@@ -5,10 +5,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,16 +18,13 @@ import kigali.clinc.clinicmanagement.service.AppointmentService;
 @RequestMapping("/api/appointments")
 public class AppointmentController {
 
-    @Autowired
-    private AppointmentService appointmentService;
+    @Autowired private AppointmentService appointmentService;
 
-    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> saveAppointment(@RequestBody Appointment appointment) {
-        String message = appointmentService.saveAppointment(appointment);
-        if (message.equals("Doctor is already booked on that date")) {
-            return new ResponseEntity<>(message, HttpStatus.CONFLICT);
-        }
-        return new ResponseEntity<>(message, HttpStatus.CREATED);
+    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> saveAppointment(@RequestBody Appointment appointment) {
+        String msg = appointmentService.saveAppointment(appointment);
+        if (msg.equals("Appointment saved successfully")) return new ResponseEntity<>(msg, HttpStatus.CREATED);
+        return new ResponseEntity<>(msg, HttpStatus.BAD_REQUEST);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -43,64 +36,39 @@ public class AppointmentController {
     public ResponseEntity<?> getAppointmentById(@PathVariable UUID id) {
         return appointmentService.getAppointmentById(id)
                 .<ResponseEntity<?>>map(a -> new ResponseEntity<>(a, HttpStatus.OK))
-                .orElse(new ResponseEntity<>("Appointment not found", HttpStatus.NOT_FOUND));
+                .orElse(new ResponseEntity<>("The appointment with that id does not exist", HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateAppointment(@PathVariable UUID id, @RequestBody Appointment appointment) {
-        String message = appointmentService.updateAppointment(id, appointment);
-        return message.equals("Appointment updated successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updateAppointment(@PathVariable UUID id, @RequestBody Appointment appointment) {
+        String msg = appointmentService.updateAppointment(id, appointment);
+        return msg.equals("Appointment updated successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.OK)
+                : new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
     }
 
-    @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> deleteAppointment(@PathVariable UUID id) {
-        String message = appointmentService.deleteAppointment(id);
-        return message.equals("Appointment deleted successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseEntity<String> deleteAppointment(@PathVariable UUID id) {
+        String msg = appointmentService.deleteAppointment(id);
+        if (msg.equals("Appointment deleted successfully")) return new ResponseEntity<>(msg, HttpStatus.OK);
+        if (msg.equals("That appointment has prescriptions, delete them first")) return new ResponseEntity<>(msg, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
     }
 
-    @GetMapping(value = "/by-status", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Appointment>> getAppointmentsByStatus(@RequestParam AppointmentStatus status) {
-        return new ResponseEntity<>(appointmentService.getAppointmentsByStatus(status), HttpStatus.OK);
+    @PatchMapping(value = "/{id}/status")
+    public ResponseEntity<String> updateStatus(@PathVariable UUID id, @RequestParam AppointmentStatus status) {
+        String msg = appointmentService.updateStatus(id, status);
+        if (msg.equals("Appointment status updated successfully")) return new ResponseEntity<>(msg, HttpStatus.OK);
+        if (msg.equals("The appointment with that id does not exist")) return new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(msg, HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping(value = "/between", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Appointment>> getAppointmentsBetween(@RequestParam String start, @RequestParam String end) {
-        LocalDate startDate = LocalDate.parse(start);
-        LocalDate endDate = LocalDate.parse(end);
-        return new ResponseEntity<>(appointmentService.getAppointmentsBetween(startDate, endDate), HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/stats/by-status", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Object[]>> getAppointmentStatsByStatus() {
-        return new ResponseEntity<>(appointmentService.getAppointmentStatsByStatus(), HttpStatus.OK);
-    }
-
-    @PatchMapping(value = "/cancel-day", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> cancelDoctorAppointmentsOnDate(@RequestParam UUID doctorId, @RequestParam String date) {
-        LocalDate day = LocalDate.parse(date);
-        return new ResponseEntity<>(appointmentService.cancelDoctorAppointmentsOnDate(doctorId, day), HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/page", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Page<Appointment>> getAppointmentsPage(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "appointmentDate,asc") String sort) {
-        String[] sortParams = sort.split(",");
-        Sort.Direction direction = sortParams.length > 1 && sortParams[1].equalsIgnoreCase("desc")
-                ? Sort.Direction.DESC
-                : Sort.Direction.ASC;
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortParams[0]));
-        return new ResponseEntity<>(appointmentService.getAppointmentsPage(pageable), HttpStatus.OK);
-    }
-
-    @DeleteMapping(value = "/cancelled-before", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<String> deleteCancelledBefore(@RequestParam String date) {
-        LocalDate day = LocalDate.parse(date);
-        return new ResponseEntity<>(appointmentService.deleteCancelledBefore(day), HttpStatus.OK);
+    @PatchMapping(value = "/{id}/reschedule")
+    public ResponseEntity<String> reschedule(@PathVariable UUID id, @RequestParam String newDate) {
+        String msg = appointmentService.reschedule(id, LocalDate.parse(newDate));
+        if (msg.equals("Appointment rescheduled successfully")) return new ResponseEntity<>(msg, HttpStatus.OK);
+        if (msg.equals("The appointment with that id does not exist")) return new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
+        if (msg.equals("Doctor is already booked on that date")) return new ResponseEntity<>(msg, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(msg, HttpStatus.BAD_REQUEST);
     }
 }
