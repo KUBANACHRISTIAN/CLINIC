@@ -16,13 +16,12 @@ import kigali.clinc.clinicmanagement.service.SpecializationService;
 @RequestMapping("/api/specializations")
 public class SpecializationController {
 
-    @Autowired
-    private SpecializationService specializationService;
+    @Autowired private SpecializationService specializationService;
 
-    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> saveSpecialization(@RequestBody Specialization specialization) {
-        String message = specializationService.saveSpecialization(specialization);
-        return new ResponseEntity<>(message, HttpStatus.CREATED);
+    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> saveSpecialization(@RequestBody Specialization specialization) {
+        String msg = specializationService.saveSpecialization(specialization);
+        return new ResponseEntity<>(msg, HttpStatus.CREATED);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -37,20 +36,20 @@ public class SpecializationController {
                 .orElse(new ResponseEntity<>("Specialization not found", HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateSpecialization(@PathVariable UUID id, @RequestBody Specialization specialization) {
-        String message = specializationService.updateSpecialization(id, specialization);
-        return message.equals("Specialization updated successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updateSpecialization(@PathVariable UUID id, @RequestBody Specialization specialization) {
+        String msg = specializationService.updateSpecialization(id, specialization);
+        return msg.equals("Specialization updated successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.OK)
+                : new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
     }
 
-    @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> deleteSpecialization(@PathVariable UUID id) {
-        String message = specializationService.deleteSpecialization(id);
-        return message.equals("Specialization deleted successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseEntity<String> deleteSpecialization(@PathVariable UUID id) {
+        String msg = specializationService.deleteSpecialization(id);
+        return msg.equals("Specialization deleted successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.OK)
+                : new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/unused", produces = MediaType.APPLICATION_JSON_VALUE)

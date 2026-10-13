@@ -16,15 +16,14 @@ import kigali.clinc.clinicmanagement.service.OfficeService;
 @RequestMapping("/api/offices")
 public class OfficeController {
 
-    @Autowired
-    private OfficeService officeService;
+    @Autowired private OfficeService officeService;
 
-    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> saveOffice(@RequestBody Office office) {
-        String message = officeService.saveOffice(office);
-        return message.equals("Office saved successfully")
-                ? new ResponseEntity<>(message, HttpStatus.CREATED)
-                : new ResponseEntity<>(message, HttpStatus.CONFLICT);
+    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> saveOffice(@RequestBody Office office) {
+        String msg = officeService.saveOffice(office);
+        return msg.equals("Office saved successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.CREATED)
+                : new ResponseEntity<>(msg, HttpStatus.CONFLICT);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -39,12 +38,20 @@ public class OfficeController {
                 .orElse(new ResponseEntity<>("Office not found", HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updateOffice(@PathVariable UUID id, @RequestBody Office office) {
-        String message = officeService.updateOffice(id, office);
-        return message.equals("Office updated successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updateOffice(@PathVariable UUID id, @RequestBody Office office) {
+        String msg = officeService.updateOffice(id, office);
+        return msg.equals("Office updated successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.OK)
+                : new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
+    }
+
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseEntity<String> deleteOffice(@PathVariable UUID id) {
+        String msg = officeService.deleteOffice(id);
+        return msg.equals("Office deleted successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.OK)
+                : new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,20 +59,8 @@ public class OfficeController {
         return new ResponseEntity<>(officeService.searchByName(name), HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> deleteOffice(@PathVariable UUID id) {
-        String message = officeService.deleteOffice(id);
-        return message.equals("Office deleted successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
-    }
-
-    @GetMapping(value = "/busiest", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getBusiestOffice() {
-        List<Object[]> result = officeService.getBusiestOffice();
-        if (result.isEmpty()) {
-            return new ResponseEntity<>("No appointments yet", HttpStatus.OK);
-        }
-        return new ResponseEntity<>(result.get(0), HttpStatus.OK);
+    @GetMapping(value = "/free", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<List<Office>> getFreeOffices() {
+        return new ResponseEntity<>(officeService.getFreeOffices(), HttpStatus.OK);
     }
 }

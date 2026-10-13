@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import kigali.clinc.clinicmanagement.domain.Office;
@@ -14,24 +13,18 @@ import kigali.clinc.clinicmanagement.repository.OfficeRepository;
 @Service
 public class OfficeService {
 
-    @Autowired
-    private OfficeRepository officeRepo;
+    @Autowired private OfficeRepository officeRepo;
 
     public String saveOffice(Office office) {
-        if (officeRepo.existsByOfficeNumber(office.getOfficeNumber())) {
-            return "Office with number " + office.getOfficeNumber() + " already exists";
-        }
+        if (officeRepo.existsByOfficeNumber(office.getOfficeNumber()))
+            return "Office already exists";
         officeRepo.save(office);
         return "Office saved successfully";
     }
 
-    public List<Office> getAllOffices() {
-        return officeRepo.findAll();
-    }
+    public List<Office> getAllOffices() { return officeRepo.findAll(); }
 
-    public Optional<Office> getOfficeById(UUID id) {
-        return officeRepo.findById(id);
-    }
+    public Optional<Office> getOfficeById(UUID id) { return officeRepo.findById(id); }
 
     public String updateOffice(UUID id, Office updated) {
         return officeRepo.findById(id).map(office -> {
@@ -47,14 +40,14 @@ public class OfficeService {
     }
 
     public String deleteOffice(UUID id) {
-        if (!officeRepo.existsById(id)) {
-            return "Office not found";
-        }
+        if (!officeRepo.existsById(id)) return "Office not found";
         officeRepo.deleteById(id);
         return "Office deleted successfully";
     }
 
-    public List<Object[]> getBusiestOffice() {
-        return officeRepo.findBusiestOffice(PageRequest.of(0, 1));
-    }
+    // A3 - free offices (JPQL)
+    public List<Office> getFreeOffices() { return officeRepo.findFreeOffices(); }
+
+    // D4 - count free offices
+    public long countFreeOffices() { return officeRepo.countFreeOffices(); }
 }
