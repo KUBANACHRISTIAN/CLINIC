@@ -10,25 +10,22 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import kigali.clinc.clinicmanagement.domain.Patient;
-import kigali.clinc.clinicmanagement.service.DoctorService;
+import kigali.clinc.clinicmanagement.service.AppointmentService;
 import kigali.clinc.clinicmanagement.service.PatientService;
 
 @RestController
 @RequestMapping("/api/patients")
 public class PatientController {
 
-    @Autowired
-    private PatientService patientService;
+    @Autowired private PatientService patientService;
+    @Autowired private AppointmentService appointmentService;
 
-    @Autowired
-    private DoctorService doctorService;
-
-    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> savePatient(@RequestBody Patient patient) {
-        String message = patientService.savePatient(patient);
-        return message.equals("Patient saved successfully")
-                ? new ResponseEntity<>(message, HttpStatus.CREATED)
-                : new ResponseEntity<>(message, HttpStatus.CONFLICT);
+    @PostMapping(value = "/save", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> savePatient(@RequestBody Patient patient) {
+        String msg = patientService.savePatient(patient);
+        return msg.equals("Patient saved successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.CREATED)
+                : new ResponseEntity<>(msg, HttpStatus.CONFLICT);
     }
 
     @GetMapping(value = "/all", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -43,12 +40,20 @@ public class PatientController {
                 .orElse(new ResponseEntity<>("Patient not found", HttpStatus.NOT_FOUND));
     }
 
-    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> updatePatient(@PathVariable UUID id, @RequestBody Patient patient) {
-        String message = patientService.updatePatient(id, patient);
-        return message.equals("Patient updated successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
+    @PutMapping(value = "/update/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> updatePatient(@PathVariable UUID id, @RequestBody Patient patient) {
+        String msg = patientService.updatePatient(id, patient);
+        return msg.equals("Patient updated successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.OK)
+                : new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
+    }
+
+    @DeleteMapping(value = "/delete/{id}")
+    public ResponseEntity<String> deletePatient(@PathVariable UUID id) {
+        String msg = patientService.deletePatient(id);
+        return msg.equals("Patient deleted successfully")
+                ? new ResponseEntity<>(msg, HttpStatus.OK)
+                : new ResponseEntity<>(msg, HttpStatus.NOT_FOUND);
     }
 
     @GetMapping(value = "/search", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -56,29 +61,10 @@ public class PatientController {
         return new ResponseEntity<>(patientService.searchByFirstName(firstName), HttpStatus.OK);
     }
 
-    @DeleteMapping(value = "/delete/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> deletePatient(@PathVariable UUID id) {
-        String message = patientService.deletePatient(id);
-        return message.equals("Patient deleted successfully")
-                ? new ResponseEntity<>(message, HttpStatus.OK)
-                : new ResponseEntity<>(message, HttpStatus.NOT_FOUND);
-    }
-
-    @GetMapping(value = "/by-last-name", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Patient>> getPatientsByLastName(@RequestParam String lastName) {
-        return new ResponseEntity<>(patientService.getPatientsByLastName(lastName), HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/of-doctor/{doctorId}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getPatientsOfDoctor(@PathVariable UUID doctorId) {
-        if (!doctorService.doctorExists(doctorId)) {
-            return new ResponseEntity<>("The doctor with that id does not exist", HttpStatus.NOT_FOUND);
-        }
-        return new ResponseEntity<>(patientService.getPatientsOfDoctor(doctorId), HttpStatus.OK);
-    }
-
-    @GetMapping(value = "/frequent", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Patient>> getFrequentPatients(@RequestParam int min) {
-        return new ResponseEntity<>(patientService.getFrequentPatients(min), HttpStatus.OK);
+    @GetMapping(value = "/{ssNumber}/upcoming", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getUpcoming(@PathVariable String ssNumber) {
+        if (!patientService.existsBySsNumber(ssNumber))
+            return new ResponseEntity<>("That patient with that ssnumber does not exist", HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(appointmentService.getUpcoming(ssNumber), HttpStatus.OK);
     }
 }

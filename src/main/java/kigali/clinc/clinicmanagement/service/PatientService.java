@@ -13,30 +13,25 @@ import kigali.clinc.clinicmanagement.repository.PatientRepository;
 @Service
 public class PatientService {
 
-    @Autowired
-    private PatientRepository patientRepo;
+    @Autowired private PatientRepository patientRepo;
 
     public String savePatient(Patient patient) {
-        if (patientRepo.existsByFirstNameAndLastName(patient.getFirstName(), patient.getLastName())) {
-            return "Patient " + patient.getFirstName() + " " + patient.getLastName() + " already exists";
-        }
+        if (patientRepo.existsByFirstNameAndLastName(patient.getFirstName(), patient.getLastName()))
+            return "Patient already exists";
         patientRepo.save(patient);
         return "Patient saved successfully";
     }
 
-    public List<Patient> getAllPatients() {
-        return patientRepo.findAll();
-    }
+    public List<Patient> getAllPatients() { return patientRepo.findAll(); }
 
-    public Optional<Patient> getPatientById(UUID id) {
-        return patientRepo.findById(id);
-    }
+    public Optional<Patient> getPatientById(UUID id) { return patientRepo.findById(id); }
 
     public String updatePatient(UUID id, Patient updated) {
         return patientRepo.findById(id).map(patient -> {
             patient.setFirstName(updated.getFirstName());
             patient.setLastName(updated.getLastName());
             patient.setDateOfBirth(updated.getDateOfBirth());
+            patient.setSsNumber(updated.getSsNumber());
             patientRepo.save(patient);
             return "Patient updated successfully";
         }).orElse("Patient not found");
@@ -47,22 +42,12 @@ public class PatientService {
     }
 
     public String deletePatient(UUID id) {
-        if (!patientRepo.existsById(id)) {
-            return "Patient not found";
-        }
+        if (!patientRepo.existsById(id)) return "Patient not found";
         patientRepo.deleteById(id);
         return "Patient deleted successfully";
     }
 
-    public List<Patient> getPatientsByLastName(String lastName) {
-        return patientRepo.findByLastNameIgnoreCaseOrderByFirstNameAsc(lastName);
-    }
-
-    public List<Patient> getPatientsOfDoctor(UUID doctorId) {
-        return patientRepo.findPatientsByDoctorId(doctorId);
-    }
-
-    public List<Patient> getFrequentPatients(int min) {
-        return patientRepo.findFrequentPatients(min);
+    public boolean existsBySsNumber(String ssNumber) {
+        return patientRepo.findBySsNumber(ssNumber).isPresent();
     }
 }
