@@ -19,11 +19,9 @@ public interface OfficeRepository extends JpaRepository<Office, UUID> {
 
     List<Office> findByNameContainingIgnoreCase(String name);
 
-    // A3 - JPQL: offices with no doctor, sorted by office number
     @Query("SELECT o FROM Office o WHERE NOT EXISTS (SELECT d FROM Doctor d WHERE d.office = o) ORDER BY o.officeNumber")
     List<Office> findFreeOffices();
 
-    // D4 - count free offices (reuse A3 logic)
     @Query("SELECT COUNT(o) FROM Office o WHERE NOT EXISTS (SELECT d FROM Doctor d WHERE d.office = o)")
     long countFreeOffices();
 }

@@ -30,7 +30,7 @@ public class Doctor {
     @JoinColumn(name = "office_id")
     private Office office;
 
-    // Doctor is the owning side of the many-to-many with Specialization
+    
     @ManyToMany
     @JoinTable(
         name = "doctor_specialization",

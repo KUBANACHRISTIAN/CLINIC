@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import kigali.clinc.clinicmanagement.domain.Office;
 import kigali.clinc.clinicmanagement.service.OfficeService;
-
+@CrossOrigin(origins = "http://localhost:5173") 
 @RestController
 @RequestMapping("/api/offices")
 public class OfficeController {

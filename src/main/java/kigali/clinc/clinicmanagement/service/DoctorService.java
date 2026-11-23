@@ -12,8 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import kigali.clinc.clinicmanagement.domain.Appointment;
 import kigali.clinc.clinicmanagement.domain.AppointmentStatus;
 import kigali.clinc.clinicmanagement.domain.Doctor;
-import kigali.clinc.clinicmanagement.domain.Office;
-import kigali.clinc.clinicmanagement.domain.Specialization;
 import kigali.clinc.clinicmanagement.repository.AppointmentRepository;
 import kigali.clinc.clinicmanagement.repository.DoctorRepository;
 import kigali.clinc.clinicmanagement.repository.OfficeRepository;
@@ -35,9 +33,13 @@ public class DoctorService {
         return "Doctor saved successfully";
     }
 
-    public List<Doctor> getAllDoctors() { return doctorRepo.findAll(); }
+    public List<Doctor> getAllDoctors() {
+        return doctorRepo.findAll();
+    }
 
-    public Optional<Doctor> getDoctorById(UUID id) { return doctorRepo.findById(id); }
+    public Optional<Doctor> getDoctorById(UUID id) {
+        return doctorRepo.findById(id);
+    }
 
     public String updateDoctor(UUID id, Doctor updated) {
         return doctorRepo.findById(id).map(doctor -> {
@@ -50,12 +52,13 @@ public class DoctorService {
     }
 
     public String deleteDoctor(UUID id) {
-        if (!doctorRepo.existsById(id)) return "The doctor with that id does not exist";
+        if (!doctorRepo.existsById(id))
+            return "The doctor with that id does not exist";
         doctorRepo.deleteById(id);
         return "Doctor deleted successfully";
     }
 
-    // A1 - add specialization to doctor
+    // A1 - add one specialization to a doctor
     public String addSpecialization(UUID doctorId, UUID specializationId) {
         return doctorRepo.findById(doctorId).map(doctor ->
             specializationRepo.findById(specializationId).map(spec -> {
@@ -68,7 +71,7 @@ public class DoctorService {
         ).orElse("The doctor with that id does not exist");
     }
 
-    // A2 - remove specialization from doctor
+    // A2 - remove one specialization from a doctor
     public String removeSpecialization(UUID doctorId, UUID specializationId) {
         return doctorRepo.findById(doctorId).map(doctor ->
             specializationRepo.findById(specializationId).map(spec -> {
@@ -81,7 +84,7 @@ public class DoctorService {
         ).orElse("The doctor with that id does not exist");
     }
 
-    // A4 - move doctor to another office
+    // A4 - move a doctor to another office
     public String moveToOffice(UUID doctorId, int officeNumber) {
         return doctorRepo.findById(doctorId).map(doctor ->
             officeRepo.findByOfficeNumber(officeNumber).map(office -> {
@@ -96,17 +99,17 @@ public class DoctorService {
         ).orElse("The doctor with that id does not exist");
     }
 
-    // D1 - doctor's agenda for a day (no CANCELLED)
+    // D1 - doctor's agenda for a day, excluding CANCELLED appointments
     public List<Appointment> getAgenda(UUID doctorId, LocalDate date) {
         return appointmentRepo.findByDoctorIdAndAppointmentDateAndStatusNot(doctorId, date, AppointmentStatus.CANCELLED);
     }
 
-    // D3 - search doctors by name (JPQL)
+    // D3 - search doctors by first name or last name (JPQL)
     public List<Doctor> searchByName(String name) {
         return doctorRepo.searchByName(name);
     }
 
-    // Bonus workload
+    // Bonus - doctor workload: completed appointments per doctor between two dates
     public List<Object[]> getWorkload(LocalDate start, LocalDate end) {
         return appointmentRepo.findDoctorWorkload(start, end);
     }
